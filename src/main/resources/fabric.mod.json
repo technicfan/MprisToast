@@ -1,0 +1,24 @@
+{
+    "schemaVersion": 1,
+    "id": "mpristoast",
+    "version": "${version}",
+    "name": "MprisToast",
+    "description": "(Linux only) Mpris song info via the vanilla music toast",
+    "authors": ["technicfan"],
+    "contact": {
+        "sources": "https://github.com/technicfan/MprisToast"
+    },
+    "license": "MIT",
+    "icon": "assets/mpristoast/icon.png",
+    "environment": "client",
+    "entrypoints": {
+        "client": ["technicfan.mpristoast.MprisToastClient"]
+    },
+    "mixins": ["mpristoast.mixins.json"],
+    "depends": {
+        "fabricloader": ">=0.17.3",
+        "minecraft": ["1.21.10"],
+        "java": ">=17",
+        "fabric-api": "*"
+    }
+}

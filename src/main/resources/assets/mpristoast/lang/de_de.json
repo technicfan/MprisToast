@@ -1,0 +1,17 @@
+{
+    "key.category.mpristoast.mpristoast": "MPRIS Custom Hud",
+    "mpristoast.key.playpause": "Start/Pause",
+    "mpristoast.key.play": "Start",
+    "mpristoast.key.pause": "Pause",
+    "mpristoast.key.next": "Nächstes Lied",
+    "mpristoast.key.prev": "Vorheriges Lied",
+    "mpristoast.key.refresh": "Liedinfo neuladen",
+    "mpristoast.key.cycle": "Player durchschalten",
+    "mpristoast.command.enabled": "MprisToast sind jetzt aktiviert",
+    "mpristoast.command.disabled": "MprisToast jetzt deaktiviert",
+    "mpristoast.command.new_filter": "Der neue Filter ist: %1$s",
+    "mpristoast.command.new_preferred": "Der neue bevorzugte Player ist: %1$s",
+    "mpristoast.command.current_player": "Der aktuelle Player ist: %1$s",
+    "mpristoast.command.current_filter": "Der aktuelle Filter ist: %1$s",
+    "mpristoast.command.current_preferred": "Der aktuelle bevorzugte Player ist: %1$s"
+}
