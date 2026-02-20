@@ -10,6 +10,10 @@ This mod shows the media currently playing on your system using the vanilla musi
 
 To make it work, you also have to enable the toast in vanilla options.
 
+As you might be able to tell, this mod is based on my other mod [MprisCustomHud](https://github.com/technicfan/MprisCustomHud) I made mainly to learn how to use MPRIS (and DBUS) with dbus-java.
+
+This I made to learn a little bit about mixins and because I think it's cool :)
+
 ### Controls
 
 There are keybindings for enable/disable, play/pause, next, previous, refresh and cycle through active players that all have correcsponding commands.
