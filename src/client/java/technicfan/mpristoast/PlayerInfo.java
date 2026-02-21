@@ -2,14 +2,9 @@ package technicfan.mpristoast;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.freedesktop.dbus.exceptions.DBusException;
-import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
-import org.freedesktop.dbus.interfaces.Properties;
-import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 import org.freedesktop.dbus.types.Variant;
 
 public class PlayerInfo {
@@ -57,20 +52,14 @@ public class PlayerInfo {
         resetValues();
     }
 
-    PlayerInfo(String name, boolean existing) {
+    PlayerInfo(String name, Player player, AutoCloseable handler, boolean existing) {
         busName = name;
+        this.player = player;
+        this.propertiesHandler = handler;
         this.existing = existing;
         resetValues();
-
-        try {
-            player = MediaTracker.conn.getRemoteObject(busName, "/org/mpris/MediaPlayer2", Player.class);
-            // listen for music Properties (like metadata, shuffle status, ...)
-            propertiesHandler = MediaTracker.conn.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
-            if (existing) {
-                refreshValues();
-            }
-        } catch (DBusException e) {
-            MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
+        if (existing) {
+            updateData(MediaTracker.getAllValues(busName), null, true);
         }
     }
 
@@ -95,11 +84,16 @@ public class PlayerInfo {
         album = "";
         artist = "";
 
-        MediaTracker.update(this, true);
+        MediaTracker.update(this);
     }
 
-    private void updateData(Map<String, Variant<?>> data, List<String> removed, boolean init) {
-        String tempId = trackId;
+    protected void updateData(Map<String, Variant<?>> data, List<String> removed, boolean init) {
+        if (!existing) {
+            data = MediaTracker.getAllValues(busName);
+            removed = null;
+            init = true;
+            existing = true;
+        }
         if (removed != null) {
             for (String property : removed) {
                 switch (property) {
@@ -131,7 +125,7 @@ public class PlayerInfo {
             updateMetadata(metadata);
         }
 
-        MediaTracker.update(this, trackId != tempId);
+        MediaTracker.update(this);
     }
 
     private void updateMetadata(Map<String, ?> metadata) {
@@ -164,38 +158,6 @@ public class PlayerInfo {
             album = (String) albumObj;
         } else {
             album = "";
-        }
-    }
-
-    protected void refreshValues() {
-        try {
-            if (Arrays.asList(MediaTracker.dbus.ListNames()).contains(busName)) {
-                synchronized (MediaTracker.conn) {
-                    Properties properties = MediaTracker.conn
-                            .getRemoteObject(busName, "/org/mpris/MediaPlayer2", Properties.class);
-                    Map<String, Variant<?>> data = properties.GetAll("org.mpris.MediaPlayer2.Player");
-                    data.putAll(properties.GetAll("org.mpris.MediaPlayer2"));
-                    updateData(data, null, true);
-                }
-            }
-        } catch (DBusException e) {
-            MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
-        }
-    }
-
-    private class PropChangedHandler extends AbstractPropertiesChangedHandler {
-        @Override
-        public void handle(PropertiesChanged signal) {
-            // check if signal came from the currently selected player
-            if (MediaTracker.dbus.GetNameOwner(busName).equals(signal.getSource())) {
-                if (existing) {
-                    Map<String, Variant<?>> changed = signal.getPropertiesChanged();
-                    updateData(changed, signal.getPropertiesRemoved(), false);
-                } else {
-                    refreshValues();
-                    existing = true;
-                }
-            }
         }
     }
 }

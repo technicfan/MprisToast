@@ -22,7 +22,7 @@ public class MusicTrackerMixin {
         )
     )
     private void preventShowToast(ToastManager manager) {
-        if (!MediaTracker.enabled()) {
+        if (!MediaTracker.show()) {
             manager.onMusicTrackStart();
         }
     }
@@ -39,7 +39,7 @@ public class MusicTrackerMixin {
         )
     )
     private void showToastOverride(MusicTracker tracker, boolean shown) {
-        if (!MediaTracker.enabled()) {
+        if (!MediaTracker.show()) {
             ((MusicTrackerAccessor) tracker).shownToast(shown);
         }
     }

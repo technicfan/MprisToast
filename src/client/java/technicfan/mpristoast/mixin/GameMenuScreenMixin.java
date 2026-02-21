@@ -2,18 +2,29 @@ package technicfan.mpristoast.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.option.GameOptions;
+import net.minecraft.sound.SoundCategory;
 import technicfan.mpristoast.MediaTracker;
 
 @Mixin(GameMenuScreen.class)
 public class GameMenuScreenMixin {
-    @Inject(method = "shouldShowNowPlayingToast", at = @At("HEAD"), cancellable = true)
-    public void showToast(CallbackInfoReturnable<Boolean> cir) {
-        if (MediaTracker.enabled()) {
-            cir.setReturnValue(((GameMenuScreenAccessor) this).showMenu() && MediaTracker.playing());
+    @Redirect(
+        method = {
+            "shouldShowNowPlayingToast"
+        },
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/option/GameOptions;getSoundVolume(Lnet/minecraft/sound/SoundCategory;)F"
+        )
+    )
+    private float preventShowToast(GameOptions options, SoundCategory c) {
+        if (MediaTracker.show()) {
+            return 1;
+        } else {
+            return options.getSoundVolume(c);
         }
     }
 }

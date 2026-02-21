@@ -6,7 +6,7 @@ This mod is Linux only
 
 ## Description
 
-This mod shows the media currently playing on your system using the vanilla music toast feature.
+This (fabric) mod shows the media currently playing on your system using the vanilla music toast feature on 1.21.10 and 1.21.11 (currently).
 
 To make it work, you also have to enable the toast in vanilla options.
 
@@ -34,10 +34,9 @@ With `mpristoast player`, you get the currently active player, with `mpristoast 
 
 - when you're running Minecraft in a Flatpak sandbox, you have to add `org.mpris.MediaPlayer2.*` to the list of well known session bus names your launcher can talk to e.g. with [Flatseal](https://github.com/tchx84/flatseal)
 
-### Problems/Todo
+### Note
 
-- it's 1.21.10 only currently and a will expand it 1.21.11 and probably newer versions
-    - there will be no older versions, as the music toast didn't exist pre 1.21.10
+- there will be no older versions, as the music toast didn't exist pre 1.21.10
 
 ### Libraries used
 

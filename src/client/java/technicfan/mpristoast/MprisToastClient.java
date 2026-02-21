@@ -1,7 +1,5 @@
 package technicfan.mpristoast;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
@@ -17,8 +15,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.option.KeyBinding.Category;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -27,7 +25,7 @@ public class MprisToastClient implements ClientModInitializer {
     public static final String MOD_ID = "mpristoast";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    private final static String[] version = MinecraftClient.getInstance().getGameVersion().split("\\.");
+    private final static Category MOD_CATEGORY = KeyBinding.Category.create(Identifier.of(MOD_ID, MOD_ID));
 
     @Override
     public void onInitializeClient() {
@@ -70,65 +68,32 @@ public class MprisToastClient implements ClientModInitializer {
                         .then(ClientCommandManager.literal("previous")
                                 .executes(MprisToastClient::previousPlayer))));
 
-        Object MOD_CATEGORY;
-        Class<?> categoryClass;
-        Constructor<KeyBinding> keybindingCtor;
         KeyBinding playPauseBinding, nextBinding, prevBinding, refreshBinding, cycleBinding;
-        // Keybinding category with Keybinding.Category for Minecraft >= 1.21.9
-        if (version.length == 3 && Integer.parseInt(version[0]) >= 1 && Integer.parseInt(version[1]) >= 21
-                && Integer.parseInt(version[2]) >= 9) {
-            try {
-                MOD_CATEGORY = KeyBinding.Category.create(Identifier.of(MOD_ID, MOD_ID));
-                keybindingCtor = KeyBinding.class.getConstructor(String.class, InputUtil.Type.class, int.class,
-                        KeyBinding.Category.class);
-                categoryClass = KeyBinding.Category.class;
-            } catch (NoClassDefFoundError | NoSuchMethodException | NoSuchMethodError e) {
-                LOGGER.error(e.toString(), e.fillInStackTrace());
-                return;
-            }
-            // Keybinding category with String for Minecraft < 1.21.9
-        } else {
-            try {
-                MOD_CATEGORY = "key.category.mpristoast.mpristoast";
-                keybindingCtor = KeyBinding.class.getConstructor(String.class, InputUtil.Type.class, int.class,
-                        String.class);
-                categoryClass = String.class;
-            } catch (NoSuchMethodException | NoSuchMethodError e) {
-                LOGGER.error(e.toString(), e.fillInStackTrace());
-                return;
-            }
-        }
-
-        try {
-            playPauseBinding = KeyBindingHelper.registerKeyBinding(keybindingCtor.newInstance(
-                    "mpristoast.key.playpause",
-                    InputUtil.Type.KEYSYM,
-                    InputUtil.UNKNOWN_KEY.getCode(),
-                    categoryClass.cast(MOD_CATEGORY)));
-            nextBinding = KeyBindingHelper.registerKeyBinding(keybindingCtor.newInstance(
-                    "mpristoast.key.next",
-                    InputUtil.Type.KEYSYM,
-                    InputUtil.UNKNOWN_KEY.getCode(),
-                    categoryClass.cast(MOD_CATEGORY)));
-            prevBinding = KeyBindingHelper.registerKeyBinding(keybindingCtor.newInstance(
-                    "mpristoast.key.prev",
-                    InputUtil.Type.KEYSYM,
-                    InputUtil.UNKNOWN_KEY.getCode(),
-                    categoryClass.cast(MOD_CATEGORY)));
-            refreshBinding = KeyBindingHelper.registerKeyBinding(keybindingCtor.newInstance(
-                    "mpristoast.key.refresh",
-                    InputUtil.Type.KEYSYM,
-                    InputUtil.UNKNOWN_KEY.getCode(),
-                    categoryClass.cast(MOD_CATEGORY)));
-            cycleBinding = KeyBindingHelper.registerKeyBinding(keybindingCtor.newInstance(
-                    "mpristoast.key.cycle",
-                    InputUtil.Type.KEYSYM,
-                    InputUtil.UNKNOWN_KEY.getCode(),
-                    categoryClass.cast(MOD_CATEGORY)));
-        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
-            LOGGER.error(e.toString(), e.fillInStackTrace());
-            return;
-        }
+        playPauseBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "mpristoast.key.playpause",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                MOD_CATEGORY));
+        nextBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "mpristoast.key.next",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                MOD_CATEGORY));
+        prevBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "mpristoast.key.prev",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                MOD_CATEGORY));
+        refreshBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "mpristoast.key.refresh",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                MOD_CATEGORY));
+        cycleBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "mpristoast.key.cycle",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                MOD_CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (playPauseBinding.wasPressed()) {

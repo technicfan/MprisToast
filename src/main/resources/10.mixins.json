@@ -1,0 +1,9 @@
+{
+    "required": true,
+    "package": "technicfan.mpristoast.mixin.v1_21_10",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": ["NowPlayingToastAccessor", "NowPlayingToastMixin"],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}
