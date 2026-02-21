@@ -20,7 +20,7 @@ There are keybindings for enable/disable, play/pause, next, previous, refresh an
 
 ### Configuration
 
-By default a player is selected from the active ones and the mod is enabled, so you will not see toasts with vanilla music. To cycle through the currently active ones, use the `mpristoast cycle` command (only works if no filter is set).
+By default a player is selected from the active ones and the mod is enabled, so you will not see toasts with vanilla music while your other music is playing. To cycle through the currently active ones, use the `mpristoast cycle` command (only works if no filter is set).
 <br>
 To enable/disable the mod, use the `mpristoast enable` and `mpristoast disable` commands.
 <br>
