@@ -112,7 +112,7 @@ public class MediaTracker {
     protected static Stream<String> getPlayerStream() {
         List<String> players = getActivePlayers();
         players.replaceAll(p -> p.replaceAll(busPrefix, ""));
-        if (players.contains(CONFIG.getPreferred()) || CONFIG.getPreferred().isEmpty()) {
+        if (CONFIG.getPreferred().isEmpty() || players.contains(CONFIG.getPreferred())) {
             return Stream.concat(Stream.of(""), players.stream());
         } else {
             return Stream.concat(Stream.of("", CONFIG.getPreferred()), players.stream());
