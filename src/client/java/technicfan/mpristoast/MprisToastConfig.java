@@ -1,7 +1,5 @@
 package technicfan.mpristoast;
 
-import java.io.File;
-
 public class MprisToastConfig {
     private boolean enabled = true;
     private boolean replace = false;
@@ -38,9 +36,5 @@ public class MprisToastConfig {
 
     protected void setPreferred(String preferred) {
         this.preferred = preferred;
-    }
-
-    protected void setFile(File file) {
-        this.file = file;
     }
 }
