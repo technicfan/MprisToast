@@ -57,7 +57,7 @@ public class MediaTracker {
     protected static void update(PlayerInfo info) {
         if (info.getBusName().equals(currentBusName)) {
             active = info.getPlaying();
-            String track = active ? info.getArtist().equals("") ? info.getTrack()
+            String track = active ? info.getArtist().isEmpty() ? info.getTrack()
                     : String.format("%s - %s", info.getArtist(), info.getTrack()) : null;
             if (CONFIG.getEnabled() && active && !track.equals(currentTrack)) {
                 ToastManager manager = client.getToastManager();
@@ -112,7 +112,7 @@ public class MediaTracker {
     protected static Stream<String> getPlayerStream() {
         List<String> players = getActivePlayers();
         players.replaceAll(p -> p.replaceAll(busPrefix, ""));
-        if (players.contains(CONFIG.getPreferred())) {
+        if (players.contains(CONFIG.getPreferred()) || CONFIG.getPreferred().isEmpty()) {
             return Stream.concat(Stream.of(""), players.stream());
         } else {
             return Stream.concat(Stream.of("", CONFIG.getPreferred()), players.stream());

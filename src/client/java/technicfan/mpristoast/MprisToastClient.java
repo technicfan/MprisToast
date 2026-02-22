@@ -117,7 +117,7 @@ public class MprisToastClient implements ClientModInitializer {
         preferredToggle = new OptionInstance<String>("mpristoast.option.preferred",
                 OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.preferred.tooltip")),
                 (optionText, value) -> {
-                    if ("".equals(value)) {
+                    if (value.isEmpty()) {
                         return Component.translatable("mpristoast.option.preferred.default");
                     } else {
                         return Component.literal(value);
