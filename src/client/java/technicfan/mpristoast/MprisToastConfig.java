@@ -1,31 +1,46 @@
 package technicfan.mpristoast;
 
+import java.io.File;
+
 public class MprisToastConfig {
     private boolean enabled = true;
-    private String filter = "";
+    private boolean replace = false;
+    private boolean onlyPreferred = false;
     private String preferred = "";
 
-    public boolean getEnabled() {
+    protected boolean getEnabled() {
         return enabled;
     }
 
-    public String getFilter() {
-        return filter;
+    protected boolean getReplace() {
+        return replace;
     }
 
-    public String getPreferred() {
+    protected boolean getOnlyPreferred() {
+        return onlyPreferred;
+    }
+
+    protected String getPreferred() {
         return preferred;
     }
 
-    public void setEnabled(boolean enabled) {
+    protected void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
+    protected void setReplace(boolean replace) {
+        this.replace = replace;
     }
 
-    public void setPreferred(String preferred) {
+    protected void setOnlyPreferred(boolean onlyPreferred) {
+        this.onlyPreferred = onlyPreferred;
+    }
+
+    protected void setPreferred(String preferred) {
         this.preferred = preferred;
+    }
+
+    protected void setFile(File file) {
+        this.file = file;
     }
 }

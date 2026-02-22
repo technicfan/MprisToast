@@ -7,11 +7,12 @@
     "mpristoast.key.prev": "Previous Song",
     "mpristoast.key.refresh": "Refresh Playback Info",
     "mpristoast.key.cycle": "Cycle through Player",
-    "mpristoast.command.enabled": "MprisToast is now enabled",
-    "mpristoast.command.disabled": "MprisToast is now disabled",
-    "mpristoast.command.new_filter": "The new filter is: %1$s",
-    "mpristoast.command.new_preferred": "The new preferred player is: %1$s",
-    "mpristoast.command.current_player": "The current player is: %1$s",
-    "mpristoast.command.current_filter": "The current filter is: %1$s",
-    "mpristoast.command.current_preferred": "The current preferred player is: %1$s"
+    "mpristoast.option.enable": "Enable MprisToast",
+    "mpristoast.option.replace": "Replace vanilla toast",
+    "mpristoast.option.replace.tooltip": "If turned on, there will be no music toasts with vanilla music even if no other music is playing on your system",
+    "mpristoast.option.preferred": "Preferred source",
+    "mpristoast.option.preferred.default": "Standard",
+    "mpristoast.option.preferred.tooltip": "Set a music source that will be used when it's active. `Default` will always use the one that is discovered first",
+    "mpristoast.option.only_preferred": "Only show preferred source",
+    "mpristoast.option.only_preferred.tooltip": "If turned on, nothing will be used if the preferred source is not active. Set `Preferred source` to anything but `Default`, otherwise there will never be music shown"
 }

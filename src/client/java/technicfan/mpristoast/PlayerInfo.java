@@ -2,13 +2,19 @@ package technicfan.mpristoast;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.freedesktop.dbus.exceptions.DBusException;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
+import org.freedesktop.dbus.interfaces.Properties;
+import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 import org.freedesktop.dbus.types.Variant;
 
 public class PlayerInfo {
-    private String name, track, trackId, album, artist;
+    private String name = "", track = "", trackId = "", album = "", artist = "";
     private boolean existing, playing;
 
     private Player player;
@@ -52,15 +58,18 @@ public class PlayerInfo {
         resetValues();
     }
 
-    PlayerInfo(String name, Player player, AutoCloseable handler, boolean existing) {
+    PlayerInfo(String name, boolean existing) {
         busName = name;
-        this.player = player;
-        this.propertiesHandler = handler;
-        this.existing = existing;
-        resetValues();
-        if (existing) {
-            updateData(MediaTracker.getAllValues(busName), null, true);
+        synchronized (MediaTracker.conn) {
+            try {
+                player = MediaTracker.conn.getRemoteObject(name, "/org/mpris/MediaPlayer2", Player.class);
+                propertiesHandler = MediaTracker.conn.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
+            } catch (DBusException e) {
+                MprisToastClient.LOGGER.warn(e.toString(), e.fillInStackTrace());
+            }
         }
+        this.existing = existing;
+        updateData(getAllValues(), null, true);
     }
 
     protected void close() {
@@ -74,10 +83,6 @@ public class PlayerInfo {
 
     private void resetValues() {
         name = "";
-        resetPlayerValues();
-    }
-
-    private void resetPlayerValues() {
         track = "";
         trackId = "";
         playing = false;
@@ -87,11 +92,31 @@ public class PlayerInfo {
         MediaTracker.update(this);
     }
 
-    protected void updateData(Map<String, Variant<?>> data, List<String> removed, boolean init) {
-        if (!existing) {
-            data = MediaTracker.getAllValues(busName);
+    private Map<String, Variant<?>> getAllValues() {
+        try {
+            if (Arrays.asList(MediaTracker.dbus.ListNames()).contains(busName)) {
+                synchronized (MediaTracker.conn) {
+                    Properties properties = MediaTracker.conn
+                            .getRemoteObject(busName, "/org/mpris/MediaPlayer2", Properties.class);
+                    Map<String, Variant<?>> data = properties.GetAll("org.mpris.MediaPlayer2.Player");
+                    data.putAll(properties.GetAll("org.mpris.MediaPlayer2"));
+                    return data;
+                }
+            }
+        } catch (DBusException | DBusExecutionException e) {
+            MprisToastClient.LOGGER.warn(e.toString(), e.fillInStackTrace());
+        }
+        return new HashMap<>();
+    }
+
+    protected void refresh() {
+        updateData(getAllValues(), null, false);
+    }
+
+    private void updateData(Map<String, Variant<?>> data, List<String> removed, boolean init) {
+        if (!(existing || init)) {
+            data = getAllValues();
             removed = null;
-            init = true;
             existing = true;
         }
         if (removed != null) {
@@ -158,6 +183,20 @@ public class PlayerInfo {
             album = (String) albumObj;
         } else {
             album = "";
+        }
+    }
+
+    private class PropChangedHandler extends AbstractPropertiesChangedHandler {
+        @Override
+        public void handle(PropertiesChanged signal) {
+            try {
+                // check if signal came from the currently selected player
+                if (MediaTracker.dbus.GetNameOwner(busName).equals(signal.getSource())) {
+                    Map<String, Variant<?>> changed = signal.getPropertiesChanged();
+                    updateData(changed, signal.getPropertiesRemoved(), false);
+                }
+            } catch (DBusExecutionException e) {
+            }
         }
     }
 }

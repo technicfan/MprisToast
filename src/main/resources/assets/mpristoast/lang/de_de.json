@@ -7,11 +7,12 @@
     "mpristoast.key.prev": "Vorheriges Lied",
     "mpristoast.key.refresh": "Liedinfo neuladen",
     "mpristoast.key.cycle": "Player durchschalten",
-    "mpristoast.command.enabled": "MprisToast sind jetzt aktiviert",
-    "mpristoast.command.disabled": "MprisToast jetzt deaktiviert",
-    "mpristoast.command.new_filter": "Der neue Filter ist: %1$s",
-    "mpristoast.command.new_preferred": "Der neue bevorzugte Player ist: %1$s",
-    "mpristoast.command.current_player": "Der aktuelle Player ist: %1$s",
-    "mpristoast.command.current_filter": "Der aktuelle Filter ist: %1$s",
-    "mpristoast.command.current_preferred": "Der aktuelle bevorzugte Player ist: %1$s"
+    "mpristoast.option.enable": "MprisToast aktivieren",
+    "mpristoast.option.replace": "Vanilla Toast ersetzen",
+    "mpristoast.option.replace.tooltip": "Wenn aktiviert wird nie ein Toast mit Vanilla Musik angezeigt, selbst wenn keine sonstige Musik läuft",
+    "mpristoast.option.preferred": "Bevorzugte Quelle",
+    "mpristoast.option.preferred.default": "Standard",
+    "mpristoast.option.preferred.tooltip": "Eine Musikquelle wählen, die genutzt wird wenn sie aktiv ist. `Standard` verwendet immer die erste erkannte Musikquelle",
+    "mpristoast.option.only_preferred": "Nur bevorzugte Quelle",
+    "mpristoast.option.only_preferred.tooltip": "Wenn aktiviert wird keine andere Quelle verwendet wenn die bevorzugte nicht aktiv ist. `Bevorzugte Quelle` sollte auf etwas anderes als `Standard` gesetzt werden, da sonst nie Musik angezeigt wird"
 }

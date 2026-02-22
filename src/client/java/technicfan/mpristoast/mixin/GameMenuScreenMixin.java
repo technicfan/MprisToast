@@ -20,7 +20,7 @@ public class GameMenuScreenMixin {
             target = "Lnet/minecraft/client/option/GameOptions;getSoundVolume(Lnet/minecraft/sound/SoundCategory;)F"
         )
     )
-    private float preventShowToast(GameOptions options, SoundCategory c) {
+    private float bypassMusicVolume(GameOptions options, SoundCategory c) {
         if (MediaTracker.show()) {
             return 1;
         } else {

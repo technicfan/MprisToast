@@ -6,7 +6,9 @@
         "GameMenuScreenMixin",
         "MusicTrackerAccessor",
         "MusicTrackerMixin",
-        "NowPlayingToastMixin"
+        "NowPlayingToastMixin",
+        "SoundOptionsScreenMixin",
+        "GameOptionsScreenAccessor"
     ],
     "injectors": {
         "defaultRequire": 1
