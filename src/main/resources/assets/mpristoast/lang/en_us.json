@@ -13,6 +13,6 @@
     "mpristoast.option.preferred": "Preferred source",
     "mpristoast.option.preferred.default": "Standard",
     "mpristoast.option.preferred.tooltip": "Set a music source that will be used when it's active. `Default` will always use the one that is discovered first",
-    "mpristoast.option.only_preferred": "Only show preferred source",
+    "mpristoast.option.only_preferred": "Only preferred source",
     "mpristoast.option.only_preferred.tooltip": "If turned on, nothing will be used if the preferred source is not active. Set `Preferred source` to anything but `Default`, otherwise there will never be music shown"
 }

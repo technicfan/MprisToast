@@ -16,19 +16,13 @@ This I made to learn a little bit about mixins and because I think it's cool :)
 
 ### Controls
 
-There are keybindings for enable/disable, play/pause, next, previous, refresh and cycle through active players that all have correcsponding commands.
+There are keybindings for play/pause, next, previous, refresh and cycle through active players.
 
 ### Configuration
 
-By default a player is selected from the active ones and the mod is enabled, so you will not see toasts with vanilla music while your other music is playing. To cycle through the currently active ones, use the `mpristoast cycle` command (only works if no filter is set).
+By default a player is selected from the active ones and the mod is enabled, so you will not see toasts with vanilla music while your other music is playing. To cycle through the currently active ones, use the (only works if "Only preferred source" is disabled).
 <br>
-To enable/disable the mod, use the `mpristoast enable` and `mpristoast disable` commands.
-<br>
-You can also choose a mpris player if you only want to see that one with the `mpristoast filter <player>` command which will also suggest currently active ones.
-<br>
-If you still want to see other players but prefer one of them, use `mpristoast preferred <player>` so that one will always be shown if it's active.
-<br>
-With `mpristoast player`, you get the currently active player, with `mpristoast filter` and `mpristoast preferred` the values for that and with `mpristoast refresh`, you can refresh the variables.
+All options are located in the vanilla sound settings under the option to enable music toasts in the first place. They all have tooltips that explain what they do.
 
 ### Flatpak notice
 
