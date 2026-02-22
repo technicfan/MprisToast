@@ -9,9 +9,9 @@ public class DynamicMixins implements PreLaunchEntrypoint {
     @Override
     public void onPreLaunch() {
         if (FabricLoader.getInstance().getRawGameVersion().equals("1.21.10")) {
-            Mixins.addConfiguration("10.mixins.json");
+            Mixins.addConfiguration("1.21.10.mixins.json");
         } else {
-            Mixins.addConfiguration("11.mixins.json");
+            Mixins.addConfiguration("1.21.11.mixins.json");
         }
     }
 }

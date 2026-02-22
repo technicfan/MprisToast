@@ -1,46 +1,45 @@
 package technicfan.mpristoast.mixin;
 
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.sounds.MusicManager;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-
-import net.minecraft.client.sound.MusicTracker;
-import net.minecraft.client.toast.ToastManager;
 import technicfan.mpristoast.MediaTracker;
 
-@Mixin(MusicTracker.class)
-public class MusicTrackerMixin {
+@Mixin(MusicManager.class)
+public class MusicManagerMixin {
     @Redirect(
         method = {
-            "play",
-            "tryShowToast"
+            "startPlaying",
+            "showNowPlayingToastIfNeeded"
         },
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/client/toast/ToastManager;onMusicTrackStart()V"
+            target = "Lnet/minecraft/client/gui/components/toasts/ToastManager;showNowPlayingToast()V"
         )
     )
     private void preventShowToast(ToastManager manager) {
         if (!MediaTracker.show()) {
-            manager.onMusicTrackStart();
+            manager.showNowPlayingToast();
         }
     }
 
     @Redirect(
         method = {
-            "play",
-            "tryShowToast"
+            "startPlaying",
+            "showNowPlayingToastIfNeeded"
         },
         at = @At(
             value = "FIELD",
-            target = "Lnet/minecraft/client/sound/MusicTracker;shownToast:Z",
+            target = "Lnet/minecraft/client/sounds/MusicManager;toastShown:Z",
             opcode = Opcodes.PUTFIELD
         )
     )
-    private void showToastOverride(MusicTracker tracker, boolean shown) {
+    private void showToastOverride(MusicManager tracker, boolean shown) {
         if (!MediaTracker.show()) {
-            ((MusicTrackerAccessor) tracker).shownToast(shown);
+            ((MusicManagerAccessor) tracker).toastShown(shown);
         }
     }
 }

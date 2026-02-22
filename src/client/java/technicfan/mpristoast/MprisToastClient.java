@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.serialization.Codec;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -18,32 +19,31 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.SimpleOption;
-import net.minecraft.client.option.KeyBinding.Category;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.KeyMapping.Category;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class MprisToastClient implements ClientModInitializer {
     public static final String MOD_ID = "mpristoast";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private final static Category MOD_CATEGORY = KeyBinding.Category.create(Identifier.of(MOD_ID, MOD_ID));
+    private final static Category MOD_CATEGORY = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, MOD_ID));
     private static final File CONFIG_FILE = FabricLoader.getInstance()
             .getConfigDir().resolve(MprisToastClient.MOD_ID + ".json").toFile();
 
     private static MprisToastConfig CONFIG = new MprisToastConfig();
-    private static SimpleOption<Boolean> enabledToggle;
-    private static SimpleOption<Boolean> replaceToggle;
-    private static SimpleOption<String> preferredToggle;
-    private static SimpleOption<Boolean> onlyPreferredToggle;
+    private static OptionInstance<Boolean> enabledToggle;
+    private static OptionInstance<Boolean> replaceToggle;
+    private static OptionInstance<String> preferredToggle;
+    private static OptionInstance<Boolean> onlyPreferredToggle;
 
     @Override
     public void onInitializeClient() {
         loadConfig();
         registerKeybindings();
-        MediaTracker.init(MinecraftClient.getInstance(), CONFIG);
+        MediaTracker.init(Minecraft.getInstance(), CONFIG);
         createToggles();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             MediaTracker.close();
@@ -51,102 +51,102 @@ public class MprisToastClient implements ClientModInitializer {
     }
 
     private static void registerKeybindings() {
-        KeyBinding playPauseBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping playPauseBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "mpristoast.key.playpause",
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 MOD_CATEGORY));
-        KeyBinding nextBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping nextBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "mpristoast.key.next",
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 MOD_CATEGORY));
-        KeyBinding prevBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping prevBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "mpristoast.key.prev",
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 MOD_CATEGORY));
-        KeyBinding refreshBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping refreshBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "mpristoast.key.refresh",
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 MOD_CATEGORY));
-        KeyBinding cycleBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        KeyMapping cycleBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "mpristoast.key.cycle",
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 MOD_CATEGORY));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (playPauseBinding.wasPressed()) {
+            if (playPauseBinding.consumeClick()) {
                 MediaTracker.playPause();
             }
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (nextBinding.wasPressed()) {
+            if (nextBinding.consumeClick()) {
                 MediaTracker.next();
             }
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (prevBinding.wasPressed()) {
+            if (prevBinding.consumeClick()) {
                 MediaTracker.previous();
             }
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (refreshBinding.wasPressed()) {
+            if (refreshBinding.consumeClick()) {
                 MediaTracker.refresh();
             }
         });
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (cycleBinding.wasPressed()) {
+            if (cycleBinding.consumeClick()) {
                 MediaTracker.cyclePlayers();
             }
         });
     }
 
     private static void createToggles() {
-        enabledToggle = SimpleOption.ofBoolean("mpristoast.option.enable", SimpleOption.emptyTooltip(),
+        enabledToggle = OptionInstance.createBoolean("mpristoast.option.enable", OptionInstance.noTooltip(),
                 CONFIG.getEnabled(), (value) -> {
                     setEnabled(value);
                 });
-        replaceToggle = SimpleOption.ofBoolean("mpristoast.option.replace",
-                SimpleOption.constantTooltip(Text.translatable("mpristoast.option.replace.tooltip")),
+        replaceToggle = OptionInstance.createBoolean("mpristoast.option.replace",
+                OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.replace.tooltip")),
                 CONFIG.getReplace(), (value) -> {
                     setReplace(value);
                 });
-        preferredToggle = new SimpleOption<String>("mpristoast.option.preferred",
-                SimpleOption.constantTooltip(Text.translatable("mpristoast.option.preferred.tooltip")),
+        preferredToggle = new OptionInstance<String>("mpristoast.option.preferred",
+                OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.preferred.tooltip")),
                 (optionText, value) -> {
                     if ("".equals(value)) {
-                        return Text.translatable("mpristoast.option.preferred.default");
+                        return Component.translatable("mpristoast.option.preferred.default");
                     } else {
-                        return Text.literal(value);
+                        return Component.literal(value);
                     }
-                }, new SimpleOption.LazyCyclingCallbacks<String>(() -> MediaTracker.getPlayerStream().toList(),
+                }, new OptionInstance.LazyEnum<String>(() -> MediaTracker.getPlayerStream().toList(),
                         (value) -> Optional.of(value), Codec.STRING),
                 CONFIG.getPreferred(), (value) -> {
                     setPreferred(value);
                 });
-        onlyPreferredToggle = SimpleOption.ofBoolean("mpristoast.option.only_preferred",
-                SimpleOption.constantTooltip(Text.translatable("mpristoast.option.only_preferred.tooltip")),
+        onlyPreferredToggle = OptionInstance.createBoolean("mpristoast.option.only_preferred",
+                OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.only_preferred.tooltip")),
                 CONFIG.getOnlyPreferred(), (value) -> {
                     setOnlyPreferred(value);
                 });
     }
 
-    public static SimpleOption<Boolean> getEnabledToggle() {
+    public static OptionInstance<Boolean> getEnabledToggle() {
         return enabledToggle;
     }
 
-    public static SimpleOption<Boolean> getReplaceToggle() {
+    public static OptionInstance<Boolean> getReplaceToggle() {
         return replaceToggle;
     }
 
-    public static SimpleOption<String> getPreferredToggle() {
+    public static OptionInstance<String> getPreferredToggle() {
         return preferredToggle;
     }
 
-    public static SimpleOption<Boolean> getOnlyPreferredToggle() {
+    public static OptionInstance<Boolean> getOnlyPreferredToggle() {
         return onlyPreferredToggle;
     }
 
@@ -185,7 +185,7 @@ public class MprisToastClient implements ClientModInitializer {
                     LOGGER.info("MprisTost config loaded");
                 }
             } catch (IOException e) {
-                LOGGER.error(e.toString(), e.fillInStackTrace());
+                LOGGER.warn(e.toString(), e.fillInStackTrace());
             }
         }
     }

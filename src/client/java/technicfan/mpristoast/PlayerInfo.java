@@ -76,7 +76,7 @@ public class PlayerInfo {
         try {
             propertiesHandler.close();
         } catch (Exception e) {
-            MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
+            MprisToastClient.LOGGER.warn(e.toString(), e.fillInStackTrace());
         }
         resetValues();
     }

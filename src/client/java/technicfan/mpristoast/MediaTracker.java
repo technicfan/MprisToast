@@ -1,14 +1,12 @@
 package technicfan.mpristoast;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.toast.ToastManager;
-import net.minecraft.sound.SoundCategory;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.sounds.SoundSource;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.interfaces.DBus;
@@ -22,14 +20,14 @@ public class MediaTracker {
 
     protected static DBus dbus;
     protected static DBusConnection conn;
-    private static MinecraftClient client;
+    private static Minecraft client;
     private static AutoCloseable nameHandler;
     private static HashMap<String, PlayerInfo> players = new HashMap<>();
     private static String currentBusName = busPrefix;
     private static String currentTrack;
     private static boolean active;
 
-    protected static void init(MinecraftClient minecraft, MprisToastConfig config) {
+    protected static void init(Minecraft minecraft, MprisToastConfig config) {
         client = minecraft;
         CONFIG = config;
 
@@ -51,7 +49,6 @@ public class MediaTracker {
             // listen for name owner changes to reset the values in case the player
             // terminates
             nameHandler = conn.addSigHandler(NameOwnerChanged.class, new NameOwnerChangedHandler());
-
         } catch (Exception e) {
             MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
         }
@@ -66,9 +63,9 @@ public class MediaTracker {
                 ToastManager manager = client.getToastManager();
                 if (manager != null) {
                     if (active) {
-                        manager.onMusicTrackStart();
+                        manager.showNowPlayingToast();
                     } else {
-                        manager.onMusicTrackStop();
+                        manager.hideNowPlayingToast();
                     }
                 }
             }
@@ -83,7 +80,7 @@ public class MediaTracker {
     public static boolean show() {
         return CONFIG.getEnabled() &&
                 ((active || CONFIG.getReplace()) || (!CONFIG.getReplace() &&
-                        client.options.getSoundVolume(SoundCategory.MUSIC) <= 0));
+                        client.options.getFinalSoundSourceVolume(SoundSource.MUSIC) <= 0));
     }
 
     protected static void updatePreferred() {
@@ -133,7 +130,7 @@ public class MediaTracker {
             if (conn != null)
                 conn.close();
         } catch (Exception e) {
-            MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
+            MprisToastClient.LOGGER.warn(e.toString(), e.fillInStackTrace());
         }
     }
 

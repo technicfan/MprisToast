@@ -2,7 +2,7 @@
     "required": true,
     "package": "technicfan.mpristoast.mixin.v1_21_11",
     "compatibilityLevel": "JAVA_21",
-    "mixins": ["MusicTrackerMixin"],
+    "mixins": ["MusicManagerMixin"],
     "injectors": {
         "defaultRequire": 1
     }

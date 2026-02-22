@@ -3,12 +3,12 @@
     "package": "technicfan.mpristoast.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
-        "GameMenuScreenMixin",
-        "MusicTrackerAccessor",
-        "MusicTrackerMixin",
+        "MusicManagerAccessor",
+        "MusicManagerMixin",
         "NowPlayingToastMixin",
-        "SoundOptionsScreenMixin",
-        "GameOptionsScreenAccessor"
+        "OptionsSubScreenAccessor",
+        "PauseScreenMixin",
+        "SoundOptionsScreenMixin"
     ],
     "injectors": {
         "defaultRequire": 1

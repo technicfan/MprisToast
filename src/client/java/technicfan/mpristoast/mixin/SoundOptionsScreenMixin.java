@@ -1,23 +1,22 @@
 package technicfan.mpristoast.mixin;
 
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.screens.options.SoundOptionsScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.client.gui.screen.option.SoundOptionsScreen;
-import net.minecraft.client.option.SimpleOption;
 import technicfan.mpristoast.MprisToastClient;
 
 @Mixin(SoundOptionsScreen.class)
 public class SoundOptionsScreenMixin {
     @Inject(method = "addOptions", at = @At("TAIL"))
     private void addOptions(CallbackInfo ci) {
-        ((GameOptionsScreenAccessor) this).body()
-                .addAll(new SimpleOption[] { MprisToastClient.getEnabledToggle(),
+        ((OptionsSubScreenAccessor) this).list()
+                .addSmall(new OptionInstance[] { MprisToastClient.getEnabledToggle(),
                         MprisToastClient.getReplaceToggle() });
-        ((GameOptionsScreenAccessor) this).body()
-                .addAll(new SimpleOption[] { MprisToastClient.getPreferredToggle(),
+        ((OptionsSubScreenAccessor) this).list()
+                .addSmall(new OptionInstance[] { MprisToastClient.getPreferredToggle(),
                         MprisToastClient.getOnlyPreferredToggle() });
     }
 }
