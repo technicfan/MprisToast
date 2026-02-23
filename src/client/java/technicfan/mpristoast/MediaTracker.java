@@ -52,7 +52,7 @@ public class MediaTracker {
         }
     }
 
-    private static void update() {
+    private static void showToast() {
         if (CONFIG.getEnabled() && currentTrack != null && currentTrack.changed()) {
             ToastManager manager = client.getToastManager();
             if (manager != null) {
@@ -88,7 +88,7 @@ public class MediaTracker {
         if (busNames.contains(CONFIG.getBusName())
                 && (currentTrack == null || !currentTrack.busName().equals(CONFIG.getBusName()))) {
             currentTrack = new Track(CONFIG.getBusName(), true);
-            update();
+            showToast();
         } else if (CONFIG.getOnlyPreferred()) {
             currentTrack = null;
         } else if (currentTrack == null) {
@@ -135,7 +135,7 @@ public class MediaTracker {
     protected static void refresh() {
         if (currentTrack != null) {
             currentTrack = currentTrack.refresh();
-            update();
+            showToast();
         }
     }
 
@@ -145,7 +145,7 @@ public class MediaTracker {
             int newIndex = index + 1 == busNames.size() ? 0 : index + 1;
             if (index != newIndex) {
                 currentTrack = new Track(busNames.get(newIndex), true);
-                update();
+                showToast();
             }
         } else if (busNames.size() == 0) {
             currentTrack = null;
@@ -191,7 +191,7 @@ public class MediaTracker {
                     if (!CONFIG.getOnlyPreferred()) {
                         if (busNames.contains(CONFIG.getBusName())) {
                             currentTrack = new Track(CONFIG.getBusName(), true);
-                            update();
+                            showToast();
                         } else {
                             cyclePlayers();
                         }
@@ -204,7 +204,7 @@ public class MediaTracker {
                 if (signal.name.equals(CONFIG.getBusName())
                         || (currentTrack == null && !CONFIG.getOnlyPreferred())) {
                     currentTrack = new Track(signal.name, false);
-                    update();
+                    showToast();
                 }
             }
         }
@@ -218,7 +218,7 @@ public class MediaTracker {
                 if (currentTrack != null && dbus.GetNameOwner(currentTrack.busName()).equals(signal.getSource())) {
                     currentTrack = currentTrack.update(signal.getPropertiesChanged(), signal.getPropertiesRemoved(),
                             false);
-                    update();
+                    showToast();
                 }
             } catch (DBusExecutionException e) {
             }
