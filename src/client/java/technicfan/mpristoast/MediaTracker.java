@@ -1,7 +1,6 @@
 package technicfan.mpristoast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
@@ -9,90 +8,90 @@ import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.sounds.SoundSource;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
+import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.handlers.AbstractPropertiesChangedHandler;
 import org.freedesktop.dbus.interfaces.DBus;
 import org.freedesktop.dbus.interfaces.DBusSigHandler;
 import org.freedesktop.dbus.interfaces.DBus.NameOwnerChanged;
+import org.freedesktop.dbus.interfaces.Properties.PropertiesChanged;
 
 public class MediaTracker {
-    private static MprisToastConfig CONFIG;
+    private static Config CONFIG;
 
-    private static final String busPrefix = "org.mpris.MediaPlayer2.";
+    protected static final String busPrefix = "org.mpris.MediaPlayer2.";
 
-    protected static DBus dbus;
+    private static DBus dbus;
     protected static DBusConnection conn;
     private static Minecraft client;
-    private static AutoCloseable nameHandler;
-    private static HashMap<String, PlayerInfo> players = new HashMap<>();
-    private static String currentBusName = busPrefix;
-    private static String currentTrack;
-    private static boolean active;
+    private static AutoCloseable nameChangedHandler, propertiesChangedHandler;
+    private static List<String> busNames = new ArrayList<String>();
+    private static Track currentTrack;
 
-    protected static void init(Minecraft minecraft, MprisToastConfig config) {
+    protected static void init(Minecraft minecraft, Config config) {
         client = minecraft;
         CONFIG = config;
 
         try {
             conn = DBusConnectionBuilder.forSessionBus().build();
             dbus = conn.getRemoteObject("org.freedesktop.DBus", "/", DBus.class);
-            if (CONFIG.getOnlyPreferred() ||
-                    getActivePlayers().contains(currentBusName + CONFIG.getPreferred())) {
-                currentBusName += CONFIG.getPreferred();
+            busNames = getActivePlayers();
+            if (busNames.contains(CONFIG.getBusName())) {
+                currentTrack = new Track(CONFIG.getBusName(), true);
             }
-            for (String name : getActivePlayers()) {
-                if (currentBusName.equals(busPrefix)) {
-                    currentBusName = name;
+            for (String name : busNames) {
+                if (currentTrack == null) {
+                    currentTrack = new Track(name, true);
                 }
-                players.put(name, new PlayerInfo(name, true));
             }
-            if (!players.containsKey(currentBusName))
-                new PlayerInfo(currentBusName);
             // listen for name owner changes to reset the values in case the player
             // terminates
-            nameHandler = conn.addSigHandler(NameOwnerChanged.class, new NameOwnerChangedHandler());
+            nameChangedHandler = conn.addSigHandler(NameOwnerChanged.class, new NameOwnerChangedHandler());
+            propertiesChangedHandler = conn.addSigHandler(PropertiesChanged.class, new PropChangedHandler());
         } catch (Exception e) {
             MprisToastClient.LOGGER.error(e.toString(), e.fillInStackTrace());
         }
     }
 
-    protected static void update(PlayerInfo info) {
-        if (info.getBusName().equals(currentBusName)) {
-            active = info.getPlaying();
-            String track = active ? info.getArtist().isEmpty() ? info.getTrack()
-                    : String.format("%s - %s", info.getArtist(), info.getTrack()) : null;
-            if (CONFIG.getEnabled() && active && !track.equals(currentTrack)) {
-                ToastManager manager = client.getToastManager();
-                if (manager != null) {
-                    if (active) {
-                        manager.showNowPlayingToast();
-                    } else {
-                        manager.hideNowPlayingToast();
-                    }
+    private static void update() {
+        if (CONFIG.getEnabled() && currentTrack != null && currentTrack.changed()) {
+            ToastManager manager = client.getToastManager();
+            if (manager != null) {
+                if (currentTrack.active()) {
+                    manager.showNowPlayingToast();
+                } else {
+                    manager.hideNowPlayingToast();
                 }
             }
-            currentTrack = track;
+            currentTrack = currentTrack.update();
         }
     }
 
     public static String track() {
-        return currentTrack;
+        return currentTrack != null && currentTrack.active() ? currentTrack.name() : null;
     }
 
     public static boolean show() {
         return CONFIG.getEnabled() &&
-                ((active || CONFIG.getReplace()) || (!CONFIG.getReplace() &&
+                (((currentTrack != null && currentTrack.active()) || CONFIG.getReplace()) || (!CONFIG.getReplace() &&
                         client.options.getFinalSoundSourceVolume(SoundSource.MUSIC) <= 0));
     }
 
+    protected static void setConfig(Config config) {
+        CONFIG = config;
+    }
+
+    protected static Config getConfig() {
+        return CONFIG;
+    }
+
     protected static void updatePreferred() {
-        if ((players.containsKey(busPrefix + CONFIG.getPreferred()) || CONFIG.getOnlyPreferred())
-                && !currentBusName.equals(busPrefix + CONFIG.getPreferred())) {
-            currentBusName = busPrefix + CONFIG.getPreferred();
-            if (players.containsKey(currentBusName)) {
-                update(players.get(currentBusName));
-            } else {
-                new PlayerInfo(currentBusName);
-            }
-        } else if (!players.containsKey(currentBusName)) {
+        if (busNames.contains(CONFIG.getBusName())
+                && (currentTrack == null || !currentTrack.busName().equals(CONFIG.getBusName()))) {
+            currentTrack = new Track(CONFIG.getBusName(), true);
+            update();
+        } else if (CONFIG.getOnlyPreferred()) {
+            currentTrack = null;
+        } else if (currentTrack == null) {
             cyclePlayers();
         }
     }
@@ -110,7 +109,7 @@ public class MediaTracker {
     }
 
     protected static Stream<String> getPlayerStream() {
-        List<String> players = getActivePlayers();
+        List<String> players = new ArrayList<>(busNames);
         players.replaceAll(p -> p.replaceAll(busPrefix, ""));
         if (CONFIG.getPreferred().isEmpty() || players.contains(CONFIG.getPreferred())) {
             return Stream.concat(Stream.of(""), players.stream());
@@ -122,11 +121,10 @@ public class MediaTracker {
     protected static void close() {
         try {
             MprisToastClient.LOGGER.info("Closing DBus connection and signal listeners");
-            if (nameHandler != null)
-                nameHandler.close();
-            for (String name : players.keySet()) {
-                players.get(name).close();
-            }
+            if (nameChangedHandler != null)
+                nameChangedHandler.close();
+            if (propertiesChangedHandler != null)
+                propertiesChangedHandler.close();
             if (conn != null)
                 conn.close();
         } catch (Exception e) {
@@ -135,86 +133,94 @@ public class MediaTracker {
     }
 
     protected static void refresh() {
-        if (players.containsKey(currentBusName)) {
-            players.get(currentBusName).refresh();
+        if (currentTrack != null) {
+            currentTrack = currentTrack.refresh();
+            update();
         }
     }
 
     protected static void cyclePlayers() {
-        if (players.size() > 0 && !CONFIG.getOnlyPreferred()) {
-            List<String> keys = new ArrayList<>(players.keySet());
-            int index = keys.indexOf(currentBusName);
-            currentBusName = keys.get(index + 1 == keys.size() ? 0 : index + 1);
-            update(players.get(currentBusName));
+        if (busNames.size() > 0 && !CONFIG.getOnlyPreferred()) {
+            int index = busNames.indexOf(currentTrack == null ? "" : currentTrack.busName());
+            int newIndex = index + 1 == busNames.size() ? 0 : index + 1;
+            if (index != newIndex) {
+                currentTrack = new Track(busNames.get(newIndex), true);
+                update();
+            }
+        } else if (busNames.size() == 0) {
+            currentTrack = null;
         }
     }
 
     protected static void playPause() {
-        if (players.size() > 0) {
-            Player player = players.get(currentBusName).getPlayer();
-            if (player != null)
-                player.PlayPause();
+        if (currentTrack != null) {
+            currentTrack.playPause();
         }
     }
 
     protected static void play() {
-        if (players.size() > 0) {
-            Player player = players.get(currentBusName).getPlayer();
-            if (player != null)
-                player.Play();
+        if (currentTrack != null) {
+            currentTrack.play();
         }
     }
 
     protected static void pause() {
-        if (players.size() > 0) {
-            Player player = players.get(currentBusName).getPlayer();
-            if (player != null)
-                player.Pause();
+        if (currentTrack != null) {
+            currentTrack.pause();
         }
     }
 
     protected static void next() {
-        if (players.size() > 0) {
-            Player player = players.get(currentBusName).getPlayer();
-            if (player != null)
-                player.Next();
+        if (currentTrack != null) {
+            currentTrack.next();
         }
     }
 
     protected static void previous() {
-        if (players.size() > 0) {
-            Player player = players.get(currentBusName).getPlayer();
-            if (player != null)
-                player.Previous();
+        if (currentTrack != null) {
+            currentTrack.previous();
         }
     }
 
     private static class NameOwnerChangedHandler implements DBusSigHandler<DBus.NameOwnerChanged> {
         @Override
         public void handle(DBus.NameOwnerChanged signal) {
-            if (signal.newOwner.isEmpty() && !signal.oldOwner.isEmpty()
-                    && players.containsKey(signal.name)) {
-                players.get(signal.name).close();
-                players.remove(signal.name);
-                if (signal.name.equals(currentBusName)) {
+            if (busNames.contains(signal.name) && signal.newOwner.isEmpty() && !signal.oldOwner.isEmpty()) {
+                busNames.remove(signal.name);
+                if (currentTrack != null && signal.name.equals(currentTrack.busName())) {
                     if (!CONFIG.getOnlyPreferred()) {
-                        if (players.containsKey(busPrefix + CONFIG.getPreferred())) {
-                            currentBusName = busPrefix + CONFIG.getPreferred();
-                            update(players.get(currentBusName));
+                        if (busNames.contains(CONFIG.getBusName())) {
+                            currentTrack = new Track(CONFIG.getBusName(), true);
+                            update();
                         } else {
                             cyclePlayers();
                         }
                     } else {
-                        currentBusName = busPrefix;
+                        currentTrack = null;
                     }
                 }
-            } else if (!signal.newOwner.isEmpty() && signal.oldOwner.isEmpty()
-                    && signal.name.startsWith(busPrefix)) {
-                if (signal.name.equals(busPrefix + CONFIG.getPreferred())
-                        || !(players.containsKey(currentBusName) || CONFIG.getOnlyPreferred())) {
-                    currentBusName = signal.name;
+            } else if (signal.name.startsWith(busPrefix) && !signal.newOwner.isEmpty() && signal.oldOwner.isEmpty()) {
+                busNames.add(signal.name);
+                if (signal.name.equals(CONFIG.getBusName())
+                        || (currentTrack == null && !CONFIG.getOnlyPreferred())) {
+                    currentTrack = new Track(signal.name, false);
+                    update();
                 }
-                players.put(signal.name, new PlayerInfo(signal.name, false));
+            }
+        }
+    }
+
+    private static class PropChangedHandler extends AbstractPropertiesChangedHandler {
+        @Override
+        public void handle(PropertiesChanged signal) {
+            try {
+                // check if signal came from the currently selected player
+                if (currentTrack != null && dbus.GetNameOwner(currentTrack.busName()).equals(signal.getSource())) {
+                    currentTrack = currentTrack.update(signal.getPropertiesChanged(), signal.getPropertiesRemoved(),
+                            false);
+                    update();
+                }
+            } catch (DBusExecutionException e) {
             }
         }
     }

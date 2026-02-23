@@ -29,11 +29,11 @@ import net.minecraft.resources.ResourceLocation;
 public class MprisToastClient implements ClientModInitializer {
     public static final String MOD_ID = "mpristoast";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    private final static Category MOD_CATEGORY = KeyMapping.Category.register(ResourceLocation.fromNamespaceAndPath(MOD_ID, MOD_ID));
+    private final static Category MOD_CATEGORY = KeyMapping.Category
+            .register(ResourceLocation.fromNamespaceAndPath(MOD_ID, MOD_ID));
     private static final File CONFIG_FILE = FabricLoader.getInstance()
             .getConfigDir().resolve(MprisToastClient.MOD_ID + ".json").toFile();
 
-    private static MprisToastConfig CONFIG = new MprisToastConfig();
     private static OptionInstance<Boolean> enabledToggle;
     private static OptionInstance<Boolean> replaceToggle;
     private static OptionInstance<String> preferredToggle;
@@ -41,9 +41,8 @@ public class MprisToastClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        loadConfig();
         registerKeybindings();
-        MediaTracker.init(Minecraft.getInstance(), CONFIG);
+        MediaTracker.init(Minecraft.getInstance(), loadConfig());
         createToggles();
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             MediaTracker.close();
@@ -106,12 +105,12 @@ public class MprisToastClient implements ClientModInitializer {
 
     private static void createToggles() {
         enabledToggle = OptionInstance.createBoolean("mpristoast.option.enable", OptionInstance.noTooltip(),
-                CONFIG.getEnabled(), (value) -> {
+                MediaTracker.getConfig().getEnabled(), (value) -> {
                     setEnabled(value);
                 });
         replaceToggle = OptionInstance.createBoolean("mpristoast.option.replace",
                 OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.replace.tooltip")),
-                CONFIG.getReplace(), (value) -> {
+                MediaTracker.getConfig().getReplace(), (value) -> {
                     setReplace(value);
                 });
         preferredToggle = new OptionInstance<String>("mpristoast.option.preferred",
@@ -124,12 +123,13 @@ public class MprisToastClient implements ClientModInitializer {
                     }
                 }, new OptionInstance.LazyEnum<String>(() -> MediaTracker.getPlayerStream().toList(),
                         (value) -> Optional.of(value), Codec.STRING),
-                CONFIG.getPreferred(), (value) -> {
+                MediaTracker.getConfig().getPreferred(), (value) -> {
                     setPreferred(value);
                 });
         onlyPreferredToggle = OptionInstance.createBoolean("mpristoast.option.only_preferred",
-                OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.only_preferred.tooltip")),
-                CONFIG.getOnlyPreferred(), (value) -> {
+                OptionInstance
+                        .cachedConstantTooltip(Component.translatable("mpristoast.option.only_preferred.tooltip")),
+                MediaTracker.getConfig().getOnlyPreferred(), (value) -> {
                     setOnlyPreferred(value);
                 });
     }
@@ -151,17 +151,17 @@ public class MprisToastClient implements ClientModInitializer {
     }
 
     private static void setEnabled(boolean enabled) {
-        CONFIG.setEnabled(enabled);
+        MediaTracker.setConfig(MediaTracker.getConfig().setEnabled(enabled));
         MprisToastClient.saveConfig();
     }
 
     private static void setReplace(boolean replace) {
-        CONFIG.setReplace(replace);
+        MediaTracker.setConfig(MediaTracker.getConfig().setReplace(replace));
         MprisToastClient.saveConfig();
     }
 
     private static void setOnlyPreferred(boolean onlyPreferred) {
-        CONFIG.setOnlyPreferred(onlyPreferred);
+        MediaTracker.setConfig(MediaTracker.getConfig().setOnlyPreferred(onlyPreferred));
         MediaTracker.updatePreferred();
         MprisToastClient.saveConfig();
     }
@@ -170,30 +170,32 @@ public class MprisToastClient implements ClientModInitializer {
         if (preferred.equals("None")) {
             preferred = "";
         }
-        if (!CONFIG.getPreferred().equals(preferred)) {
-            CONFIG.setPreferred(preferred);
+        if (!MediaTracker.getConfig().getPreferred().equals(preferred)) {
+            MediaTracker.setConfig(MediaTracker.getConfig().setPreferred(preferred));
             MediaTracker.updatePreferred();
-            MprisToastClient.saveConfig();
+            saveConfig();
         }
     }
 
-    private static void loadConfig() {
+    private static Config loadConfig() {
+        Config config = new Config();
         if (CONFIG_FILE.exists()) {
             try {
                 try (FileReader reader = new FileReader(CONFIG_FILE)) {
-                    CONFIG = new Gson().fromJson(reader, MprisToastConfig.class);
+                    config = new Gson().fromJson(reader, Config.class);
                     LOGGER.info("MprisTost config loaded");
                 }
             } catch (IOException e) {
                 LOGGER.warn(e.toString(), e.fillInStackTrace());
             }
         }
+        return config;
     }
 
     protected static void saveConfig() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
-            writer.write(gson.toJson(CONFIG));
+            writer.write(gson.toJson(MediaTracker.getConfig()));
         } catch (IOException e) {
             LOGGER.error(e.toString(), e.fillInStackTrace());
         }
