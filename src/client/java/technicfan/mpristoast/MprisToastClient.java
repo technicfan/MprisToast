@@ -117,7 +117,7 @@ public class MprisToastClient implements ClientModInitializer {
                 OptionInstance.cachedConstantTooltip(Component.translatable("mpristoast.option.preferred.tooltip")),
                 (optionText, value) -> {
                     if (value.isEmpty()) {
-                        return Component.translatable("mpristoast.option.preferred.default");
+                        return Component.translatable("mpristoast.option.preferred.none");
                     } else {
                         return Component.literal(value);
                     }

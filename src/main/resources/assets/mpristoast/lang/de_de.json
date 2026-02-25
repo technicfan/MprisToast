@@ -11,8 +11,8 @@
     "mpristoast.option.replace": "Vanilla Toast ersetzen",
     "mpristoast.option.replace.tooltip": "Wenn aktiviert wird nie ein Toast mit Vanilla Musik angezeigt, selbst wenn keine sonstige Musik läuft",
     "mpristoast.option.preferred": "Bevorzugte Quelle",
-    "mpristoast.option.preferred.default": "Standard",
-    "mpristoast.option.preferred.tooltip": "Eine Musikquelle wählen, die genutzt wird wenn sie aktiv ist. `Standard` verwendet immer die erste erkannte Musikquelle",
+    "mpristoast.option.preferred.none": "Keine",
+    "mpristoast.option.preferred.tooltip": "Eine Musikquelle wählen, die genutzt wird wenn sie aktiv ist. `Keine` verwendet immer die erste erkannte Musikquelle",
     "mpristoast.option.only_preferred": "Nur bevorzugte Quelle",
-    "mpristoast.option.only_preferred.tooltip": "Wenn aktiviert wird keine andere Quelle verwendet wenn die bevorzugte nicht aktiv ist. `Bevorzugte Quelle` sollte auf etwas anderes als `Standard` gesetzt werden, da sonst nie Musik angezeigt wird"
+    "mpristoast.option.only_preferred.tooltip": "Wenn aktiviert wird keine andere Quelle verwendet wenn die bevorzugte nicht aktiv ist. `Bevorzugte Quelle` sollte auf etwas anderes als `Keine` gesetzt werden, da sonst nie Musik angezeigt wird"
 }
