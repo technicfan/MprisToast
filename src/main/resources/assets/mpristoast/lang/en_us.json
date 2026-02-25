@@ -11,7 +11,7 @@
     "mpristoast.option.replace": "Replace vanilla toast",
     "mpristoast.option.replace.tooltip": "If turned on, there will be no music toasts with vanilla music even if no other music is playing on your system",
     "mpristoast.option.preferred": "Preferred source",
-    "mpristoast.option.preferred.default": "None",
+    "mpristoast.option.preferred.none": "None",
     "mpristoast.option.preferred.tooltip": "Set a music source that will be used when it's active. `None` will always use the one that is discovered first",
     "mpristoast.option.only_preferred": "Only preferred source",
     "mpristoast.option.only_preferred.tooltip": "If turned on, nothing will be used if the preferred source is not active. Set `Preferred source` to anything but `None`, otherwise there will never be music shown"
