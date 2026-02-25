@@ -119,7 +119,7 @@ public class MprisToastClient implements ClientModInitializer {
                     if (value.isEmpty()) {
                         return Component.translatable("mpristoast.option.preferred.none");
                     } else {
-                        return Component.literal(value);
+                        return Component.literal(MediaTracker.getDisplayName(value));
                     }
                 }, new OptionInstance.LazyEnum<String>(() -> MediaTracker.getPlayerStream().toList(),
                         (value) -> Optional.of(value), Codec.STRING),
@@ -171,7 +171,9 @@ public class MprisToastClient implements ClientModInitializer {
             preferred = "";
         }
         if (!MediaTracker.getConfig().getPreferred().equals(preferred)) {
-            MediaTracker.setConfig(MediaTracker.getConfig().setPreferred(preferred));
+            String displayName = MediaTracker.getDisplayName(preferred);
+            MediaTracker.setConfig(MediaTracker.getConfig().setPreferred(preferred,
+                    displayName.equalsIgnoreCase(preferred) ? "" : displayName));
             MediaTracker.updatePreferred();
             saveConfig();
         }
