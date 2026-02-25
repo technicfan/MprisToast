@@ -172,8 +172,7 @@ public class MprisToastClient implements ClientModInitializer {
         }
         if (!MediaTracker.getConfig().getPreferred().equals(preferred)) {
             String displayName = MediaTracker.getDisplayName(preferred);
-            MediaTracker.setConfig(MediaTracker.getConfig().setPreferred(preferred,
-                    displayName.equalsIgnoreCase(preferred) ? "" : displayName));
+            MediaTracker.setConfig(MediaTracker.getConfig().setPreferred(preferred, displayName));
             MediaTracker.updatePreferred();
             saveConfig();
         }
