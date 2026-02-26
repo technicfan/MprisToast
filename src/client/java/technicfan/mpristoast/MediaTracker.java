@@ -209,7 +209,7 @@ public class MediaTracker {
         } else if (name.equals(CONFIG.getPreferred()) && !CONFIG.getDisplayName().isEmpty()) {
             return CONFIG.getDisplayName();
         } else {
-            return name.isEmpty() ? "" : name.substring(0, 1).toUpperCase() + name.substring(1);
+            return "";
         }
     }
 

@@ -119,7 +119,10 @@ public class MprisToastClient implements ClientModInitializer {
                     if (value.isEmpty()) {
                         return Component.translatable("mpristoast.option.preferred.none");
                     } else {
-                        return Component.literal(MediaTracker.getDisplayName(value));
+                        String displayName = MediaTracker.getDisplayName(value);
+                        return Component.literal(
+                                displayName.isEmpty() ? value.substring(0, 1).toUpperCase() + value.substring(1)
+                                        : displayName);
                     }
                 }, new OptionInstance.LazyEnum<String>(() -> MediaTracker.getPlayerStream().toList(),
                         (value) -> Optional.of(value), Codec.STRING),
