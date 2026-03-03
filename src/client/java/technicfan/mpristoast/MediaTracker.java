@@ -2,7 +2,6 @@ package technicfan.mpristoast;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -26,6 +25,8 @@ public class MediaTracker {
     private static Config CONFIG;
 
     protected static final String busPrefix = "org.mpris.MediaPlayer2.";
+    public static final int maxWidth = 175;
+    protected static final float pixelPerMs = 1f / 96;
 
     private static DBus dbus;
     protected static DBusConnection conn;
@@ -76,8 +77,8 @@ public class MediaTracker {
         }
     }
 
-    public static Scroller getScroller() {
-        return currentTrack.scroller();
+    public static float currentScrollOffset(int width) {
+        return currentTrack != null ? currentTrack.currentScrollOffset(width) : 0;
     }
 
     public static String track() {

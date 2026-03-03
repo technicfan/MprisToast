@@ -13,8 +13,8 @@ import org.freedesktop.dbus.types.Variant;
 public class Track {
     private final String busName;
     private final Player player;
-    private final Scroller scroller;
     private final String name;
+    private final long startTime;
     private final boolean active;
     private final boolean changed;
     private final boolean existing;
@@ -25,7 +25,7 @@ public class Track {
         this.player = getPlayer();
         Track temp = update(getAllValues(), null, true);
         this.name = temp.name;
-        this.scroller = temp.scroller;
+        this.startTime = System.currentTimeMillis();
         this.active = temp.active;
         this.changed = temp.changed;
     }
@@ -34,17 +34,18 @@ public class Track {
         this.busName = busName;
         this.player = player;
         this.name = "";
-        this.scroller = new Scroller();
+        this.startTime = System.currentTimeMillis();
         this.active = false;
         this.changed = true;
         this.existing = true;
     }
 
-    private Track(String busName, Player player, String name, Scroller scroller, boolean active, boolean changed, boolean existing) {
+    private Track(String busName, Player player, String name, long startTime, boolean active, boolean changed,
+            boolean existing) {
         this.busName = busName;
         this.player = player;
         this.name = name;
-        this.scroller = scroller;
+        this.startTime = startTime;
         this.active = active;
         this.changed = changed;
         this.existing = existing;
@@ -56,10 +57,6 @@ public class Track {
 
     protected String name() {
         return name;
-    }
-
-    protected Scroller scroller() {
-        return scroller;
     }
 
     protected boolean active() {
@@ -100,16 +97,16 @@ public class Track {
     }
 
     private Track update(String name, boolean active, boolean existing) {
-        Scroller scroller = this.scroller;
+        long startTime = this.startTime;
         boolean changed = !name.equals(this.name);
         if (changed) {
-            scroller = new Scroller(name);
+            startTime = System.currentTimeMillis();
         }
-        return new Track(busName, player, name, scroller, active, !name.equals(this.name), existing);
+        return new Track(busName, player, name, startTime, active, !name.equals(this.name), existing);
     }
 
     protected Track update() {
-        return new Track(busName, player, name, scroller, active, false, existing);
+        return new Track(busName, player, name, startTime, active, false, existing);
     }
 
     protected Track update(Map<String, Variant<?>> data, List<String> removed, boolean init) {
@@ -184,5 +181,20 @@ public class Track {
             track = (String) trackObj;
         }
         return artist.isEmpty() ? track : String.format("%s - %s", artist, track);
+    }
+
+    protected float currentScrollOffset(int width) {
+        //               2000 + (width - maxWidth) * 96
+        //             = 2000 + (width - maxWidth) * 64 + (width - maxWidth) * 32
+        //             = 2000 + (width - maxWidth) * 2^6 + (width - maxWidth) * 2^5
+        long roundTime = 2000 + ((width - MediaTracker.maxWidth) << 6)
+                + ((width - MediaTracker.maxWidth) << 5);
+        long time = (System.currentTimeMillis() - startTime) % roundTime - 1000;
+        if (time <= 0) {
+            return 0;
+        } else if (time >= roundTime - 2000) {
+            return width - MediaTracker.maxWidth;
+        }
+        return time * MediaTracker.pixelPerMs;
     }
 }
