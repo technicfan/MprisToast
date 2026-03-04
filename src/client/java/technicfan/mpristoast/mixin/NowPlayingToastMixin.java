@@ -47,17 +47,13 @@ public class NowPlayingToastMixin {
         )
     )
     private static void renderToast(GuiGraphics gui, Font font, Component text, int x, int y, int color) {
-        if (MediaTracker.show()) {
-            if (width <= MediaTracker.maxWidth) {
-                gui.drawString(font, Component.nullToEmpty(MediaTracker.track()), x, y, color);
-            } else {
-                gui.enableScissor(x, 0, x + MediaTracker.maxWidth, y + font.lineHeight);
-                gui.pose().pushMatrix();
-                gui.pose().translate(x - MediaTracker.currentScrollOffset(width), 0);
-                gui.drawString(font, MediaTracker.track(), 0, y, color);
-                gui.pose().popMatrix();
-                gui.disableScissor();
-            }
+        if (MediaTracker.show() && width > MediaTracker.maxWidth) {
+            gui.enableScissor(x, 0, x + MediaTracker.maxWidth, y + font.lineHeight);
+            gui.pose().pushMatrix();
+            gui.pose().translate(x - MediaTracker.currentScrollOffset(width), 0);
+            gui.drawString(font, MediaTracker.track(), 0, y, color);
+            gui.pose().popMatrix();
+            gui.disableScissor();
         } else {
             gui.drawString(font, text, x, y, color);
         }
