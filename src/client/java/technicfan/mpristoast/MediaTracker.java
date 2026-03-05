@@ -100,10 +100,11 @@ public class MediaTracker {
     }
 
     protected static void updatePreferred() {
-        if (busNames.containsKey(CONFIG.getBusName())
-                && (currentTrack == null || !currentTrack.busName().equals(CONFIG.getBusName()))) {
-            currentTrack = new Track(CONFIG.getBusName(), true);
-            showToast();
+        if (busNames.containsKey(CONFIG.getBusName())) {
+            if (currentTrack == null || !currentTrack.busName().equals(CONFIG.getBusName())) {
+                currentTrack = new Track(CONFIG.getBusName(), true);
+                showToast();
+            }
         } else if (CONFIG.getOnlyPreferred()) {
             currentTrack = null;
         } else if (currentTrack == null) {
