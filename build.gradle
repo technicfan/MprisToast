@@ -32,8 +32,6 @@ dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
-    implementation "com.github.hypfvieh:dbus-java-core:${project.dbus_version}"
-    implementation "com.github.hypfvieh:dbus-java-transport-native-unixsocket:${project.dbus_version}"
     include "com.github.hypfvieh:dbus-java-core:${project.dbus_version}"
     include "com.github.hypfvieh:dbus-java-transport-native-unixsocket:${project.dbus_version}"
 
