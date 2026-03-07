@@ -89,7 +89,7 @@ public class MediaTracker {
         if (CONFIG.getEnabled() && currentTrack != null && currentTrack.changed()) {
             ToastManager manager = client.getToastManager();
             if (manager != null) {
-                if (currentTrack.active()) {
+                if (!currentTrack.name().isEmpty()) {
                     manager.showNowPlayingToast();
                 } else {
                     manager.hideNowPlayingToast();
@@ -104,13 +104,17 @@ public class MediaTracker {
     }
 
     public static String track() {
-        return currentTrack != null && currentTrack.active() ? currentTrack.name() : null;
+        return currentTrack != null && !currentTrack.name().isEmpty() ? currentTrack.name() : null;
     }
 
     public static boolean show() {
         return CONFIG.getEnabled() &&
-                (((currentTrack != null && currentTrack.active()) || CONFIG.getReplace()) || (!CONFIG.getReplace() &&
+                (((currentTrack != null && !currentTrack.name().isEmpty()) || CONFIG.getReplace()) || (!CONFIG.getReplace() &&
                         client.options.getFinalSoundSourceVolume(SoundSource.MUSIC) <= 0));
+    }
+
+    public static boolean playing() {
+        return currentTrack != null ? currentTrack.playing() : false;
     }
 
     protected static void setConfig(Config config) {
@@ -252,7 +256,7 @@ public class MediaTracker {
 
         @Override
         public void onPlaybackStateChanged(MediaSession session, PlaybackState state) {
-            currentTrack = currentTrack.update(!state.equals(PlaybackState.STOPPED));
+            currentTrack = currentTrack.update(state.equals(PlaybackState.PLAYING));
         }
     }
 }

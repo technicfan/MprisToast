@@ -10,7 +10,7 @@ public class Track {
     private final MediaTransportControls controls;
     private final String name;
     private final long startTime;
-    private final boolean active;
+    private final boolean playing;
     private final boolean changed;
 
     protected Track(String sessionId) {
@@ -22,11 +22,11 @@ public class Track {
         if (session != null) {
             this.controls = session.getControls();
             this.name = session.getNowPlaying().isPresent() ? getTrackName(session.getNowPlaying().get()) : "";
-            this.active = !name.isEmpty() && !controls.getPlaybackState().equals(PlaybackState.STOPPED);
+            this.playing = controls.getPlaybackState().equals(PlaybackState.PLAYING);
         } else {
             this.controls = null;
             this.name = "";
-            this.active = false;
+            this.playing = false;
         }
         this.startTime = System.currentTimeMillis();
         this.changed = true;
@@ -37,7 +37,7 @@ public class Track {
         this.name = name;
         this.controls = controls;
         this.startTime = startTime;
-        this.active = active;
+        this.playing = active;
         this.changed = changed;
     }
 
@@ -49,8 +49,8 @@ public class Track {
         return name;
     }
 
-    protected boolean active() {
-        return active;
+    protected boolean playing() {
+        return playing;
     }
 
     protected boolean changed() {
@@ -84,16 +84,16 @@ public class Track {
 
     protected Track refresh() {
         String name = "";
-        boolean active = false;
+        boolean playing = false;
         MediaSession session = MediaTracker.getSessionById(sessionId);
         if (session != null) {
             name = session.getNowPlaying().isPresent() ? getTrackName(session.getNowPlaying().get()) : "";
-            active = !name.isEmpty() && !controls.getPlaybackState().equals(PlaybackState.STOPPED);
+            playing = controls.getPlaybackState().equals(PlaybackState.PLAYING);
         } else {
             name = "";
-            active = false;
+            playing = false;
         }
-        return update(name, active);
+        return update(name, playing);
     }
 
     private static String getTrackName(NowPlaying info) {
@@ -101,24 +101,24 @@ public class Track {
     }
 
     protected Track update(NowPlaying info) {
-        return update(getTrackName(info), active);
+        return update(getTrackName(info), playing);
     }
 
-    protected Track update(boolean active) {
-        return update(name, active);
+    protected Track update(boolean playing) {
+        return update(name, playing);
     }
 
-    private Track update(String name, boolean active) {
+    private Track update(String name, boolean playing) {
         long startTime = this.startTime;
         boolean changed = !name.equals(this.name);
         if (changed) {
             startTime = System.currentTimeMillis();
         }
-        return new Track(sessionId, controls, name, startTime, active, !name.equals(this.name));
+        return new Track(sessionId, controls, name, startTime, playing, !name.equals(this.name));
     }
 
     protected Track update() {
-        return new Track(sessionId, controls, name, startTime, active, false);
+        return new Track(sessionId, controls, name, startTime, playing, false);
     }
 
     protected float currentScrollOffset(int width) {

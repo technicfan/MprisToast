@@ -36,7 +36,6 @@ dependencies {
     include "com.github.hypfvieh:dbus-java-transport-native-unixsocket:${project.dbus_version}"
 
     implementation "org.endlesssource.mediainterface:all:${project.mediainterface_version}"
-    include "org.endlesssource.mediainterface:all:${project.mediainterface_version}"
     include "org.endlesssource.mediainterface:core:${project.mediainterface_version}"
     include "org.endlesssource.mediainterface:linux:${project.mediainterface_version}"
     include "org.endlesssource.mediainterface:macos:${project.mediainterface_version}"
