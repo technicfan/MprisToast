@@ -120,6 +120,7 @@ public class MprisToastClient implements ClientModInitializer {
                         return Component.translatable("mpristoast.option.preferred.none");
                     } else {
                         String displayName = MediaTracker.getDisplayName(value);
+                        value = value.replaceFirst("org.mpris.MediaPlayer2.", "").replaceFirst("\\.exe$", "");
                         return Component.literal(
                                 displayName.isEmpty() ? value.substring(0, 1).toUpperCase() + value.substring(1)
                                         : displayName);

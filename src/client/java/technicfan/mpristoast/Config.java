@@ -39,10 +39,6 @@ public class Config {
         return preferred;
     }
 
-    protected String getBusName() {
-        return MediaTracker.busPrefix + preferred;
-    }
-
     protected String getDisplayName() {
         return preferredDisplay;
     }
