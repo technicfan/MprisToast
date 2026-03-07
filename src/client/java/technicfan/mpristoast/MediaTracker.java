@@ -36,7 +36,8 @@ public class MediaTracker {
         CONFIG = config;
 
         try {
-            media = SystemMediaFactory.createSystemInterface(SystemMediaOptions.defaults());
+            media = SystemMediaFactory.createSystemInterface(SystemMediaOptions.defaults()
+                    .withPositionUpdatesEnabled(false));
             for (MediaSession session : media.getAllSessions()) {
                 sessions.put(session.getSessionId(), session.getApplicationName());
             }
